@@ -69,5 +69,25 @@ namespace ListaDeTarefa2.Controllers
             return Ok("Deletado com sucesso ");
         }
 
+        [HttpGet("reservasCliente/{identCliente}")]
+        public IActionResult ReservasCliente(int identCliente)
+        {
+            var resultado = from u in _context.Usuarios
+                            join t in _context.Tarefas
+                            on u.Id equals t.IdUsuario
+                            where identCliente == u.Id
+                            select new
+                            {
+                                Usuario = u.Nome,
+                                u.Email,
+                                Tarefa = t.Descricao,
+                                t.Status,
+                                
+                            };
+            return Ok(resultado.ToList());
+        }
+
+
+
     }
 }
