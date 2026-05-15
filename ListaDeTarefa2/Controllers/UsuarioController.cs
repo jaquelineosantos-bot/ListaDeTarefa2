@@ -28,7 +28,8 @@ namespace Atividade0705.Controllers
                 {
                     Expires = DateTime.Now.AddMinutes(30),
                     Secure = true,
-                    HttpOnly = true
+                    HttpOnly = true,
+                    SameSite = SameSiteMode.None
                 });
             return Ok("Login realizado com sucesso!");
         }

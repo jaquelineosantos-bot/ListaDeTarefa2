@@ -42,14 +42,14 @@ namespace ListaDeTarefa2.Controllers
                 return NotFound("Tarefa não encontrado");
 
             tarefaDoBanco.Descricao = tarefa.Descricao;
-            tarefaDoBanco.Status = tarefa.Status;
+            tarefaDoBanco.Statuss = tarefa.Statuss;
 
             return Ok("Atualizado com sucesso!!");
         }
         [HttpGet("status/{nome}")]
         public IActionResult ConsultaTarefaStatus(string nome)
         {
-            var tarefaDoBanco = _context.Tarefas.Where(t => t.Status.Contains(nome)).ToList();
+            var tarefaDoBanco = _context.Tarefas.Where(t => t.Statuss.Contains(nome)).ToList();
             if (!tarefaDoBanco.Any())
                 return NotFound("Tarefa não encontrado");
             return Ok(tarefaDoBanco);
@@ -81,7 +81,7 @@ namespace ListaDeTarefa2.Controllers
                                 Usuario = u.Nome,
                                 u.Email,
                                 Tarefa = t.Descricao,
-                                t.Status,
+                                t.Statuss,
                                 
                             };
             return Ok(resultado.ToList());

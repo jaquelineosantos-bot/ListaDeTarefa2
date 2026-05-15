@@ -6,9 +6,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDistributedMemoryCache(); // Necessário para armazenar a sessão em memória
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30); // Tempo de expiração
-    options.Cookie.HttpOnly = true; // Segurança
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 // Add services to the container.
@@ -20,12 +22,19 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<UsuarioContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirTudo", policy =>
+    {
+        policy.WithOrigins("http://127.0.0.1:5500&quot;", "http://localhost:5500&quot;")
+              .AllowAnyHeader()  // Permite qualquer cabeçalho
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 var app = builder.Build();
 
-
-app.UseSession();
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -33,6 +42,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("PermitirTudo");
+
+app.UseSession();
 
 app.UseAuthorization();
 
