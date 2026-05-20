@@ -36,6 +36,10 @@ namespace ListaDeTarefa2.Controllers
         [HttpPut("atualizar/{id}")]
         public IActionResult Atualizar(int id, Tarefa tarefa)
         {
+            var usuario = HttpContext.Session.GetString("Email");
+            if (usuario == null)
+                return Unauthorized("Não autenticado");
+
             var tarefaDoBanco = _context.Tarefas.Find(id);
 
             if (tarefaDoBanco == null)
@@ -43,51 +47,60 @@ namespace ListaDeTarefa2.Controllers
 
             tarefaDoBanco.Descricao = tarefa.Descricao;
             tarefaDoBanco.Statuss = tarefa.Statuss;
-
+            _context.SaveChanges();
             return Ok("Atualizado com sucesso!!");
         }
-        [HttpGet("status/{nome}")]
-        public IActionResult ConsultaTarefaStatus(string nome)
-        {
-            var tarefaDoBanco = _context.Tarefas.Where(t => t.Statuss.Contains(nome)).ToList();
-            if (!tarefaDoBanco.Any())
-                return NotFound("Tarefa não encontrado");
-            return Ok(tarefaDoBanco);
-        }
+
 
         [HttpDelete("{id}")]
         public IActionResult Deletar(int id)
         {
-            var tarefa = _context.Usuarios.Find(id);
+            var usuario = HttpContext.Session.GetString("Email");
+            if (usuario == null)
+                return Unauthorized("Não autenticado");
+
+            var tarefa = _context.Tarefas.Find(id);
 
             if (tarefa == null)
                 return NotFound("Tarefa não encontrado");
 
-            _context.Usuarios.Remove(tarefa);
+            _context.Tarefas.Remove(tarefa);
             _context.SaveChanges();
 
             return Ok("Deletado com sucesso ");
         }
 
-        [HttpGet("reservasCliente/{identCliente}")]
-        public IActionResult ReservasCliente(int identCliente)
+        [HttpGet("reservasCliente")]
+        public IActionResult ReservasCliente()
         {
-            var resultado = from u in _context.Usuarios
-                            join t in _context.Tarefas
-                            on u.Id equals t.IdUsuario
-                            where identCliente == u.Id
-                            select new
-                            {
-                                Usuario = u.Nome,
-                                u.Email,
-                                Tarefa = t.Descricao,
-                                t.Statuss,
-                                
-                            };
-            return Ok(resultado.ToList());
+            var usuario = HttpContext.Session.GetString("Email");
+            if (usuario == null)
+                return Unauthorized("Não autenticado");
+
+
+            var idCliente = Request.Cookies["IdUsado"];
+            if (idCliente != null)
+            {
+
+
+                var resultado = from u in _context.Usuarios
+                                join t in _context.Tarefas
+                                on u.Id equals t.IdUsuario
+                                where  u.Id == int.Parse(idCliente)
+                                select new
+                                {
+                                    Usuario = u.Nome,
+                                    u.Email,
+                                    Tarefa = t.Descricao,
+                                    t.Statuss,
+                                    t.Id
+
+                                };
+                return Ok(resultado.ToList());
+            }
+
+            return Unauthorized("Não autenticado");
+
         }
-
-
-
     }
 }
